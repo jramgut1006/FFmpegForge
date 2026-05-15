@@ -10,32 +10,31 @@ EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def main():
-    pass
+    customwidth = input("Enter width (e.g.: 1920): ")
+    compression = input("Enter compression level (1-31 | Lower = better quality | Default is 4): ")
+    RUN(customwidth, compression)
 
-def setCommand():
+def setParameters(file: str, customwidth: int, compression: int, OutputFile: str) -> list[str]:
     command = [
-        "ffmpeg","-y","-i", str(file),
-        # Resize if exceeds 1920px in width
+        "ffmpeg", "-y", "-i", str(file),
+        # resize if exceeds 1920px in width
         # "-vf", "scale='min(3840,iw)':-2",
         "-vf", f"scale={customwidth}:-2",
-        # Quality
-        "-q:v", "4",
+        # quality / compression level
+        "-q:v", str(compression),
     ]
 
+    command.append(str(OutputFile))
+
     return command
 
-def setOutputFile(command: list[str], output_file: str) -> list[str]:
-    command.append(str(output_file))
-    return command
-
-def RUN():
-    command = setCommand()
+def RUN(customwidth, compression):
     for file in Path(INPUT_DIR).iterdir():
         if file.suffix.lower() not in EXTENSIONS:
             continue
         
         OutputFile = Path(OUTPUT_DIR) / f"{file.stem}{file.suffix.lower()}"
-        command = setOutputFile(command, OutputFile)
+        command = setParameters(file, customwidth, compression, OutputFile)
 
         print(f"Compressing: {file.name}")
 
