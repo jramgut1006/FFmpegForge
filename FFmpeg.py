@@ -3,18 +3,19 @@ import subprocess
 from pathlib import Path
 
 # SETTINGS
-INPUT_DIR = "./"
+INPUT_DIR = "./test"
 OUTPUT_DIR = "./output"
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def main():
-    customwidth = input("Enter width (e.g.: 1920): ")
-    compression = input("Enter compression level (1-31 | Lower = better quality | Default is 4): ")
+    # ask user for custom parameters (added fallback)
+    customwidth = int(input("Enter width (Default: 1920): ") or 1920)
+    compression = int(input("Enter compression level (1-31 | Lower = better quality | Default: 4): ") or 4)
     RUN(customwidth, compression)
 
-def setParameters(file: str, customwidth: int, compression: int, OutputFile: str) -> list[str]:
+def setCommand(file: str, customwidth: int, compression: int, OutputFile: str) -> list[str]:
     command = [
         "ffmpeg", "-y", "-i", str(file),
         # resize if exceeds 1920px in width
@@ -34,9 +35,9 @@ def RUN(customwidth, compression):
             continue
         
         OutputFile = Path(OUTPUT_DIR) / f"{file.stem}{file.suffix.lower()}"
-        command = setParameters(file, customwidth, compression, OutputFile)
+        command = setCommand(file, customwidth, compression, OutputFile)
 
-        print(f"Compressing: {file.name}")
+        print(f"Compressing: {file.name} {command}")
 
         subprocess.run(
             command,
