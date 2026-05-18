@@ -13,7 +13,8 @@ VIDEO_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# parse arguments
+
+# PARSE ARGS
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-i", "--input", type=str)
@@ -24,20 +25,68 @@ parser.add_argument("-eI", "--image-extensions", action="store_true")
 
 args = parser.parse_args()
 
-# set global variables based on arguments
-INPUT_DIR = arg_verification.arg_input() or INPUT_DIR
-OUTPUT_DIR = arg_verification.arg_output() or OUTPUT_DIR
-EXTENSIONS = arg_verification.arg_extensions() or #########################
+
+def set_input_dir():
+
+    global INPUT_DIR
+    # ask user for input directory (added fallback)
+    try:
+        INPUT_DIR = input(f"Enter input directory (Default: {INPUT_DIR}): ") or INPUT_DIR
+        os.makedirs(INPUT_DIR, exist_ok=True)
+    except Exception as e:
+        INPUT_DIR = "./"
+        print(f"Error occurred while setting input directory: {e} | (new input directory set to {INPUT_DIR})")
 
 
-def main():
+def arg_input():
+    if args.input is not None:
+        return args.input
+    else:
+        set_input_dir()
     
-    global INPUT_DIR, OUTPUT_DIR, EXTENSIONS, IMG_EXTENSIONS, VIDEO_EXTENSIONS
+def arg_output():
+    if args.output is not None:
+        return args.output
 
-    # ask user for custom parameters (added fallback)
-    INPUT_DIR = input(f"Enter input directory (Default: {INPUT_DIR}): ") or INPUT_DIR
-    OUTPUT_DIR = input(f"Enter output directory (Default: {OUTPUT_DIR}): ") or OUTPUT_DIR
+def arg_extensions():
+    if args.image_extensions == True:
+        return {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 
+    elif args.video_extensions == True:
+        return {".mp4", ".mkv", ".avi", ".mov", ".webm"}
+    
+    else:
+        if args.extensions is not None:
+            try:
+                for ext in EXTENSIONS:
+                    if not ext.startswith("."):
+                        raise ValueError(f"Invalid extension: {ext}")
+                    
+                return {ext.strip().lower() for ext in args.extensions.split(",")}
+
+            except Exception as e:
+                print("Error:", e)
+
+
+# SET GLOBAL VARIABLES FROM ARGS
+INPUT_DIR = arg_input() or INPUT_DIR
+OUTPUT_DIR = arg_output() or OUTPUT_DIR
+EXTENSIONS = arg_extensions()
+
+
+def set_output_dir():
+    global OUTPUT_DIR
+    # ask user for output directory (added fallback)
+    try:
+        OUTPUT_DIR = input(f"Enter output directory (Default: {OUTPUT_DIR}): ") or OUTPUT_DIR
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+    except Exception as e:
+        OUTPUT_DIR = "./"
+        print(f"Error occurred while setting output directory: {e} | (new output directory set to {OUTPUT_DIR})")
+
+
+def set_extensions():
+    global EXTENSIONS
     imgORvid = input("Process images or videos? (i/v, Default: i): ") or "i"
 
     if imgORvid.lower() == "v":
@@ -73,9 +122,11 @@ def main():
             EXTENSIONS = IMG_EXTENSIONS
 
     else:
-        print("Invalid choice. Setting to default image extensions...")
-        EXTENSIONS = IMG_EXTENSIONS
+        print("Invalid choice. Try again.")
+        set_extensions()
 
+
+def set_compression_or_conversion():
 
     compressionORconversion = input("Compress/resize (c) or convert (v)? (Default: c): ") or "c"
 
@@ -90,13 +141,13 @@ def main():
             customwidth = None
             compression = None
     else:
-        print("Invalid choice. Setting to default compression settings...")
-        customwidth = 1920
-        compression = 4
+        print("Invalid choice. Try again.")
+        set_compression_or_conversion()
 
     RUN(customwidth, compression, targetExtension if compressionORconversion.lower() == "v" else None)
 
-def setCommand(file: str, customwidth: int, compression: int, OutputFile: str, targetExtension: str = None) -> list[str]:
+
+def set_command(file: str, customwidth: int, compression: int, OutputFile: str, targetExtension: str = None) -> list[str]:
 
     if targetExtension is not None:
         if targetExtension.lower() not in EXTENSIONS:
@@ -130,6 +181,7 @@ def setCommand(file: str, customwidth: int, compression: int, OutputFile: str, t
 
     return command
 
+
 def RUN(customwidth, compression, targetExtension=None):
 
     for file in Path(INPUT_DIR).iterdir():
@@ -143,13 +195,17 @@ def RUN(customwidth, compression, targetExtension=None):
         else:
             OutputFile = Path(OUTPUT_DIR) / f"{file.stem}{file.suffix.lower()}"
 
-            command = setCommand(file, customwidth, compression, OutputFile, targetExtension)
+            command = set_command(file, customwidth, compression, OutputFile, targetExtension)
 
             subprocess.run(
                 command,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
+
+
+def main():
+    pass
 
 print("Done.")
 
