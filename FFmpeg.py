@@ -1,6 +1,31 @@
 import os
 import subprocess
 from pathlib import Path
+import argparse
+
+# parse arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-i", "--input", type=str)
+parser.add_argument("-o", "--output", type=str)
+parser.add_argument("-e", "--extensions", type=str)
+parser.add_argument("-eV", "--video-extensions", action="store_true")
+parser.add_argument("-eI", "--image-extensions", action="store_true")
+
+args = parser.parse_args()
+
+if args.extensions is not None:
+
+    try:
+        EXTENSIONS = {ext.strip().lower() for ext in args.extensions.split(",")}
+
+        for ext in EXTENSIONS:
+            if not ext.startswith("."):
+                raise ValueError(f"Invalid extension: {ext}")
+        
+    except Exception as e:
+        print("Error:", e)
+
 
 # SETTINGS
 INPUT_DIR = "./test"
@@ -10,6 +35,7 @@ IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 
 def main():
     
@@ -37,7 +63,7 @@ def main():
     compressionORconversion = input("Compress/resize (c) or convert (v)? (Default: c): ") or "c"
 
     if compressionORconversion.lower() == "c":
-        customwidth = int(input("Enter width (Default: 1920): ") or 1920)
+        customwidth = int(input("Enter maximum width (Default: 1920): ") or 1920)
         compression = int(input("Enter compression level (1-31 | Lower = better quality | Default: 4): ") or 4)
 
     elif compressionORconversion.lower() == "v":
