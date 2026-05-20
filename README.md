@@ -1,22 +1,12 @@
 # FFmpegForge
 A lightweight Python CLI tool for batch media processing powered by FFmpeg.
 
-Supports:
-
-* Batch compression, conversion and resizing
-* FPS modification
-* Custom output extensions
-
----
-
 ## Features
 
-* Batch process entire directories
-* Simple CLI interface
-* FFmpeg-powered media operations
-* Supports both image and video workflows
-* Silent FFmpeg execution
-* Automatic output directory creation
+* Batch compression, conversion and resizing
+* image and video workflows
+* FPS modification
+* Custom output extensions
 
 ---
 
